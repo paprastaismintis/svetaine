@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elytė · paprasta išmintis kasdienei sveikatai</title>
+<!-- 1. Būtina orbitai: iš kur imti Three.js -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<style>
+  body { margin: 0; background: #F5F3ED; color: #2F2A24; font-family: "Segoe UI", Arial, sans-serif; }
+  .turinys { max-width: 720px; margin: 0 auto; padding: 64px 20px; line-height: 1.6; font-size: 18px; }
+  h2 { font-family: Georgia, "Times New Roman", serif; color: #4A7C59; font-size: 34px; margin: 0 0 16px; }
+  footer { text-align: center; padding: 32px 20px; font-size: 14px; color: #2F2A24; }
+</style>
+</head>
+<body>
+
+<!-- 2. Pati orbita — puslapio viršuje, per visą ekrano aukštį -->
+<elyte-orbita zodis="SVEIKATA YRA TURTAS"
+              zodziai="MITYBA,JOGA,KVĖPAVIMAS,RAMYBĖ,MIEGAS"></elyte-orbita>
+
+<main class="turinys">
+  <h2>Čia prasideda puslapio turinys</h2>
+  <p>Šis tekstas tik parodo, kaip orbita atrodo virš tikro puslapio. Slenkant žemyn orbita sustoja,
+     kad be reikalo neapkrautų telefono.</p>
+</main>
+
+<footer>Elytė Šarkuvienė · @elyte.paprastaismintis</footer>
+
+<!-- 3. Komponento failas -->
+<script type="module" src="komponentai/orbita/orbita.js"></script>
+</body>
+</html>

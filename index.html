@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elytė · paprasta išmintis kasdienei sveikatai</title>
+<meta name="description" content="Sveikata yra turtas. Joga, sveikesnė maisto gamyba ir papildai, kuriais pasitikiu.">
+<meta name="theme-color" content="#2F5C43">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%232F5C43'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+
+<!-- Three.js 3D orbitai (žr. komponentai/orbita/naudojimas.md) -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+
+<style>
+  /* Spalvos ir šriftai: context/stilius.md („Botanikos sodas“).
+     Antraštėms Gelasio, ne Georgia: Georgia viešoje svetainėje platinti negalima. */
+  :root {
+    --papartis: #4A7C59;
+    --terakota: #B7472A;
+    --medetka: #F9A620;
+    --grietinele: #F5F3ED;
+    --ruda: #2F2A24;
+    --gili: #2F5C43;
+    --ruda-svelni: #5A5249;
+    --linija: #DAD5C8;
+    --smelis: #ECE9DF;
+
+    --antrastes: "Gelasio", Georgia, "Times New Roman", serif;
+    --tekstas: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+
+    --plotis: 1180px;
+    --tarpas: clamp(72px, 10vw, 128px);
+    --lenkimas: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--grietinele);
+    color: var(--ruda);
+    font-family: var(--tekstas);
+    font-size: 18px;
+    line-height: 1.65;
+  }
+
+  img { display: block; max-width: 100%; height: auto; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--medetka); outline-offset: 3px; border-radius: 4px; }
+
+  h1, h2, h3 {
+    font-family: var(--antrastes);
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h2 { color: var(--papartis); font-size: clamp(30px, 4.2vw, 46px); letter-spacing: -0.01em; }
+  h3 { font-size: 22px; color: var(--gili); }
+  p { margin: 0; text-wrap: pretty; }
+
+  .remas { max-width: var(--plotis); margin: 0 auto; padding: 0 24px; }
+  .skyrius { padding: var(--tarpas) 0; }
+  .skaitomas { max-width: 62ch; }
+  .skaitomas > p + p { margin-top: 16px; }
+  .svelnus { color: var(--ruda-svelni); }
+
+  /* ---------- Viršus ---------- */
+  .virsus { padding: 20px 0; }
+  .virsus .remas { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .vardas {
+    font-family: var(--antrastes);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gili);
+    text-decoration: none;
+  }
+  .meniu { display: flex; gap: 28px; font-size: 16px; font-weight: 600; }
+  .meniu a { text-decoration: none; color: var(--ruda-svelni); padding: 6px 0; border-bottom: 2px solid transparent; transition: border-color .25s, color .25s; }
+  .meniu a:hover { color: var(--gili); border-color: var(--medetka); }
+
+  /* ---------- Mygtukai ---------- */
+  .mygtukas {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 28px;
+    border-radius: 999px;
+    font-size: 17px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform .25s var(--lenkimas), background-color .25s var(--lenkimas);
+  }
+  .mygtukas:active { transform: scale(0.98); }
+  .mygtukas.zalias { color: var(--grietinele); background: var(--gili); }
+  .mygtukas.zalias:hover { background: #244A35; transform: translateY(-2px); }
+  .mygtukas.kontūras { color: var(--gili); box-shadow: inset 0 0 0 2px var(--papartis); }
+  .mygtukas.kontūras:hover { background: rgba(74, 124, 89, 0.1); }
+
+  /* ---------- Pirmas ekranas: devizas ---------- */
+  .pirmas { padding: 8px 0 72px; }
+  .pirmas .remas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+    min-height: calc(100dvh - 100px);
+  }
+  .pirmas h1 {
+    font-size: clamp(36px, 4.2vw, 56px);
+    color: var(--gili);
+    letter-spacing: -0.015em;
+    max-width: 17ch;
+  }
+  .pirmas .po {
+    margin-top: 24px;
+    font-size: clamp(18px, 1.6vw, 21px);
+    color: var(--ruda-svelni);
+    max-width: 38ch;
+  }
+  .pirmas .mygtukai { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 14px; }
+
+  /* Arka: oranžerijos lango forma, vienintelis ryškus motyvas puslapyje */
+  .arka { border-radius: 999px 999px 20px 20px; overflow: hidden; background: var(--gili); }
+  .arka img { width: 100%; height: 100%; object-fit: cover; }
+  .pirmas .arka {
+    width: 100%;
+    max-width: 540px;
+    aspect-ratio: 1 / 1.08;
+    justify-self: end;
+    box-shadow: 0 34px 70px -34px rgba(47, 92, 67, 0.6);
+  }
+  .pirmas elyte-orbita { width: 100%; height: 100% !important; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .pirmas h1, .pirmas .po, .pirmas .mygtukai { animation: iskyla .9s var(--lenkimas) both; }
+    .pirmas .po { animation-delay: .1s; }
+    .pirmas .mygtukai { animation-delay: .2s; }
+    .pirmas .arka { animation: atsiveria 1.4s var(--lenkimas) .05s both; }
+  }
+  @keyframes iskyla { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes atsiveria {
+    from { clip-path: inset(100% 0 0 0 round 999px 999px 20px 20px); }
+    to { clip-path: inset(0 0 0 0 round 999px 999px 20px 20px); }
+  }
+
+  /* ---------- Apie mane ---------- */
+  .apie .remas {
+    display: grid;
+    grid-template-columns: 0.75fr 1.25fr;
+    gap: clamp(32px, 6vw, 88px);
+    align-items: center;
+  }
+  .apie .arka { aspect-ratio: 4 / 5; max-width: 400px; background: #F2F1EE; box-shadow: 0 0 0 1px var(--linija), 0 30px 60px -34px rgba(47, 92, 67, 0.45); }
+  .apie .arka img { object-position: 50% 30%; }
+  .apie h2 { margin-bottom: 26px; }
+  .apie .pagrindas {
+    font-family: var(--antrastes);
+    font-size: clamp(22px, 2.2vw, 26px);
+    line-height: 1.4;
+    color: var(--gili);
+  }
+  .faktai {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    gap: 12px 40px;
+    font-size: 16px;
+    color: var(--ruda-svelni);
+  }
+  .faktai strong {
+    display: block;
+    font-family: var(--antrastes);
+    font-size: 30px;
+    color: var(--gili);
+    line-height: 1.1;
+  }
+
+  /* ---------- Joga ---------- */
+  .joga { background: var(--smelis); }
+  .joga-galva { max-width: 62ch; margin-bottom: 48px; }
+  .joga-galva h2 { margin-bottom: 22px; }
+  .joga-galva p + p { margin-top: 16px; }
+  .joga-nuotraukos {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+  }
+  .joga-nuotraukos figure { margin: 0; border-radius: 20px; overflow: hidden; background: #6E8B3D; }
+  .joga-nuotraukos img { width: 100%; height: 100%; object-fit: cover; }
+  .joga-nuotraukos .didele { grid-row: 1 / 3; }
+  .joga-nuotraukos .didele img { object-position: 58% 50%; }
+
+  /* ---------- Maisto gamyba ---------- */
+  .gamyba .remas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 6vw, 88px);
+    align-items: start;
+  }
+  .devizas-maistui {
+    font-family: var(--antrastes);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(34px, 4.4vw, 56px);
+    line-height: 1.12;
+    color: var(--gili);
+    padding-bottom: 6px;
+  }
+  .laipsniai {
+    margin-top: 40px;
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+  }
+  .laipsniai strong {
+    font-family: var(--antrastes);
+    font-size: clamp(88px, 12vw, 150px);
+    line-height: 0.9;
+    color: var(--papartis);
+    letter-spacing: -0.03em;
+  }
+  .laipsniai span { font-size: 17px; color: var(--ruda-svelni); max-width: 16ch; line-height: 1.4; }
+  .gamyba h2 { margin-bottom: 22px; }
+  .principai {
+    margin-top: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0;
+    list-style: none;
+  }
+  .principai li {
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--smelis);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gili);
+  }
+
+  /* ---------- Papildai ---------- */
+  .papildai h2 { margin-bottom: 16px; }
+  .papildai .ivadas { margin-bottom: 56px; }
+  .lentyna {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: clamp(24px, 3.5vw, 48px);
+    align-items: start;
+  }
+  .produktas img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+  .produktas:nth-child(2) { margin-top: 64px; }
+  .produktas:nth-child(3) { margin-top: 128px; }
+  .produktas h3 { margin: 8px 0 10px; }
+  .produktas p { font-size: 17px; color: var(--ruda-svelni); }
+  .produktas .pastaba { display: block; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--papartis); }
+
+  .patirtis {
+    margin: clamp(64px, 8vw, 104px) 0 0;
+    padding: clamp(32px, 5vw, 56px);
+    border-radius: 24px;
+    background: var(--smelis);
+    max-width: 900px;
+  }
+  .patirtis blockquote {
+    margin: 0;
+    font-family: var(--antrastes);
+    font-size: clamp(23px, 2.7vw, 32px);
+    line-height: 1.38;
+    color: var(--gili);
+  }
+  .patirtis blockquote p + p { margin-top: 16px; }
+  .patirtis figcaption {
+    margin-top: 26px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 16px;
+    color: var(--ruda-svelni);
+  }
+  .patirtis figcaption::before { content: ""; width: 40px; height: 2px; background: var(--medetka); }
+
+  /* ---------- Dovana ---------- */
+  .dovana { background: var(--gili); color: var(--grietinele); }
+  .dovana .remas {
+    display: grid;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .dovana h2 { color: var(--grietinele); margin-bottom: 18px; }
+  .dovana p { color: #D9E3D8; max-width: 52ch; }
+  .dovana .mygtukas { justify-self: end; color: var(--gili); background: var(--grietinele); }
+  .dovana .mygtukas:hover { background: #fff; transform: translateY(-2px); }
+
+  /* ---------- Partnerystė ---------- */
+  .partneryste h2 { margin-bottom: 20px; }
+  .saltiniai {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 2px solid var(--papartis);
+  }
+  .saltinis { padding: 32px 40px 8px 0; }
+  .saltinis + .saltinis { padding-left: 40px; border-left: 1px solid var(--linija); }
+  .saltinis h3 { margin-bottom: 12px; }
+  .saltinis p { color: var(--ruda-svelni); }
+  .kasdien {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    padding: 0;
+    list-style: none;
+    counter-reset: zingsnis;
+  }
+  .kasdien li { counter-increment: zingsnis; }
+  .kasdien li::before {
+    content: counter(zingsnis);
+    width: 42px;
+    height: 42px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: var(--antrastes);
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--gili);
+    box-shadow: inset 0 0 0 2px var(--medetka);
+  }
+  .kasdien h3 { font-size: 20px; margin-bottom: 6px; }
+  .kasdien p { color: var(--ruda-svelni); font-size: 17px; }
+
+  /* ---------- Klausimai ---------- */
+  .klausimai { margin-top: clamp(56px, 7vw, 88px); max-width: 880px; }
+  .klausimai h3 { font-size: clamp(24px, 2.6vw, 30px); color: var(--papartis); margin-bottom: 24px; }
+  .klausimas { border-bottom: 1px solid var(--linija); }
+  .klausimas:first-of-type { border-top: 1px solid var(--linija); }
+  .klausimas summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 22px 0;
+    font-family: var(--antrastes);
+    font-size: clamp(19px, 2vw, 22px);
+    font-weight: 700;
+    color: var(--gili);
+  }
+  .klausimas summary::-webkit-details-marker { display: none; }
+  .klausimas summary::after {
+    content: "";
+    flex: none;
+    width: 13px;
+    height: 13px;
+    border-right: 2px solid var(--papartis);
+    border-bottom: 2px solid var(--papartis);
+    transform: translateY(-4px) rotate(45deg);
+    transition: transform .3s var(--lenkimas);
+  }
+  .klausimas[open] summary::after { transform: translateY(3px) rotate(-135deg); }
+  .klausimas .atsakymas { padding: 0 48px 26px 0; color: var(--ruda-svelni); max-width: 64ch; }
+  .klausimas .atsakymas p + p { margin-top: 12px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .klausimas[open] .atsakymas { animation: iskyla .45s var(--lenkimas); }
+  }
+
+  /* ---------- Pabaiga ---------- */
+  .pabaiga { text-align: center; padding-top: 0; }
+  .pabaiga .remas { border-top: 1px solid var(--linija); padding-top: var(--tarpas); }
+  .pabaiga h2 { color: var(--gili); }
+  .pabaiga p { margin: 18px auto 0; max-width: 46ch; color: var(--ruda-svelni); }
+  .mygtukas.pagrindinis {
+    margin-top: 36px;
+    color: #fff;
+    background: var(--terakota);
+    box-shadow: 0 14px 30px -14px rgba(183, 71, 42, 0.7);
+  }
+  .mygtukas.pagrindinis:hover { background: #9E3B22; transform: translateY(-2px); }
+  .pabaiga .adresas { margin-top: 16px; font-size: 15px; word-break: break-all; }
+
+  /* ---------- Apačia ---------- */
+  .apacia { padding: 40px 0 48px; font-size: 14px; color: var(--ruda-svelni); background: var(--smelis); }
+  .apacia .remas { display: grid; gap: 12px; }
+  .apacia .kas { font-size: 16px; color: var(--ruda); }
+  .apacia a { color: var(--gili); display: inline-block; padding: 10px 0; }
+  .apacia .kas { line-height: 1.3; }
+
+  /* ---------- Planšetė ---------- */
+  @media (max-width: 960px) {
+    .meniu { gap: 18px; font-size: 15px; }
+    .lentyna { grid-template-columns: 1fr 1fr; }
+    .produktas:nth-child(2) { margin-top: 48px; }
+    .produktas:nth-child(3) { margin-top: 0; grid-column: 1 / -1; max-width: 50%; }
+  }
+
+  /* ---------- Telefonas ---------- */
+  @media (max-width: 767px) {
+    body { font-size: 17px; }
+    .remas { padding: 0 20px; }
+    .virsus { padding: 12px 0 4px; }
+    .virsus .remas { flex-direction: column; align-items: flex-start; gap: 4px; padding-right: 0; }
+    .meniu {
+      width: 100%;
+      gap: 22px;
+      font-size: 15px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-right: 20px;
+    }
+    .meniu::-webkit-scrollbar { display: none; }
+    .meniu a { flex: none; padding: 10px 0; }
+
+    .pirmas { padding: 0 0 64px; }
+    .pirmas .remas { grid-template-columns: 1fr; min-height: 0; gap: 32px; }
+    .pirmas .arka { order: -1; justify-self: center; max-width: 340px; }
+    .pirmas .mygtukai { margin-top: 30px; }
+
+    .apie .remas, .gamyba .remas, .dovana .remas { grid-template-columns: 1fr; }
+    .apie .arka { max-width: 280px; justify-self: center; }
+    .faktai { grid-template-columns: 1fr 1fr; gap: 18px 28px; }
+
+    .joga-nuotraukos { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 10px; }
+    .joga-nuotraukos .didele { grid-column: 1 / -1; grid-row: auto; aspect-ratio: 4 / 3; }
+    .joga-nuotraukos figure:not(.didele) { aspect-ratio: 1; }
+
+    .lentyna { grid-template-columns: 1fr; gap: 40px; }
+    .produktas:nth-child(n) { margin-top: 0; max-width: none; grid-column: auto; }
+    .produktas img { max-width: 280px; margin: 0 auto; }
+
+    .dovana .mygtukas { justify-self: start; }
+
+    .saltiniai { grid-template-columns: 1fr; }
+    .saltinis, .saltinis + .saltinis { padding: 26px 0 4px; border-left: 0; }
+    .saltinis + .saltinis { border-top: 1px solid var(--linija); margin-top: 22px; }
+    .kasdien { grid-template-columns: 1fr; gap: 24px; }
+    .klausimas .atsakymas { padding-right: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="virsus">
+  <div class="remas">
+    <a class="vardas" href="#">Elytė</a>
+    <nav class="meniu" aria-label="Skyriai">
+      <a href="#joga">Joga</a>
+      <a href="#gamyba">Maisto gamyba</a>
+      <a href="#papildai">Papildai</a>
+      <a href="#partneryste">Partnerystė</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. Pirmas ekranas: devizas „Sveikata yra turtas“ gyvoje 3D orbitoje -->
+  <section class="pirmas" aria-labelledby="antraste">
+    <div class="remas">
+      <div>
+        <h1 id="antraste">Paprasta išmintis kasdienei sveikatai</h1>
+        <p class="po">Joga, sveikesnė maisto gamyba ir ramybė. Taip, kad pradėti galėtų bet kuris žmogus.</p>
+        <div class="mygtukai">
+          <a class="mygtukas zalias" href="#dovana">Nemokama dovana</a>
+          <a class="mygtukas kontūras" href="#apie">Kas aš esu</a>
+        </div>
+      </div>
+      <div class="arka">
+        <elyte-orbita zodis="SVEIKATA YRA TURTAS"
+                      zodziai="MITYBA,JOGA,KVĖPAVIMAS,RAMYBĖ,MIEGAS"
+                      aukstis="100%"></elyte-orbita>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Apie mane -->
+  <section class="skyrius apie" id="apie" aria-labelledby="apie-antraste">
+    <div class="remas">
+      <div class="arka">
+        <img src="vaizdai/elyte-avataras.jpg" width="896" height="1110" loading="lazy"
+             alt="Elytės portretas, raudona palaidinė">
+      </div>
+      <div class="skaitomas">
+        <h2 id="apie-antraste">Sveikas gyvenimo būdas, iš kurio auga viskas</h2>
+        <p class="pagrindas">Kūnas, mintys ir emocijos, siela. Žiūriu į visumą, ne į vieną dalį.</p>
+        <p class="svelnus">Jungiu mitybos žinias, jogą, meditaciją, kvėpavimą ir Ajurvedą. Kalbu taip, kad bet kuris žmogus, net be jokio išsilavinimo, galėtų pradėti tobulinti savo gyvenimo būdą.</p>
+        <div class="faktai">
+          <div><strong>36 metai</strong>jogos praktikos</div>
+          <div><strong>8 metai</strong>meditacijos ir kvėpavimo</div>
+          <div><strong>Mityba</strong>inžinierė-technologė</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Joga -->
+  <section class="skyrius joga" id="joga" aria-labelledby="joga-antraste">
+    <div class="remas">
+      <div class="joga-galva">
+        <h2 id="joga-antraste">Joga Sveikatai</h2>
+        <p>Tai mano pačios pritaikyta sistema, išaugusi per 36 metus praktikos. Kelerius metus vedžiau jogos mokymus Londone ir Lietuvoje.</p>
+        <p class="svelnus">Joga man yra platesnio sveiko gyvenimo būdo dalis, ne vien fiziniai pratimai. Ruošiu trumpus, neįkyrius video su paaiškinimais, kam kiekvienas judesys reikalingas.</p>
+      </div>
+      <div class="joga-nuotraukos">
+        <figure class="didele">
+          <img src="vaizdai/joga-sokejas.jpg" width="1400" height="823" loading="lazy"
+               alt="Elytė atlieka jogos šokėjo pozą">
+        </figure>
+        <figure>
+          <img src="vaizdai/joga-tempimas.jpg" width="1200" height="675" loading="lazy"
+               alt="Elytė jogos tempime ant kilimėlio">
+        </figure>
+        <figure>
+          <img src="vaizdai/joga-susukimas.jpg" width="1200" height="675" loading="lazy"
+               alt="Elytė sėdimoje jogos pozoje">
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Maisto gamyba -->
+  <section class="skyrius gamyba" id="gamyba" aria-labelledby="gamyba-antraste">
+    <div class="remas">
+      <div>
+        <p class="devizas-maistui">Valgyk sveikiau, gyvenk ilgiau.</p>
+        <div class="laipsniai">
+          <strong>86°</strong>
+          <span>tiek laipsnių, kai gaminu daržoves be vandens</span>
+        </div>
+      </div>
+      <div class="skaitomas">
+        <h2 id="gamyba-antraste">Svarbu ne tik ką valgai, bet ir kaip gamini</h2>
+        <p>Verdant daug vandens ir kaitinant stipriai, dalis naudos lieka puode, o ne lėkštėje.</p>
+        <p class="svelnus">Nereikia keisti, ką valgai. Užtenka keisti, kaip gamini. Aš gaminu žemoje temperatūroje, be vandens: daržovės ruošiasi savoje drėgmėje.</p>
+        <ul class="principai" aria-label="Kaip gaminu">
+          <li>Žemoje temperatūroje</li>
+          <li>Be vandens</li>
+          <li>Greitai</li>
+          <li>Paprastai</li>
+          <li>Taupiai</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Papildai -->
+  <section class="skyrius papildai" id="papildai" aria-labelledby="papildai-antraste">
+    <div class="remas">
+      <h2 id="papildai-antraste">Papildai, kuriais pasitikiu</h2>
+      <p class="ivadas skaitomas svelnus">Aš netikiu gražiais pažadais. Pirma skaitau sudėtį, tada bandau pati. Rekomenduoju tik tai, į ką nebūtų gėda žiūrėti žmogui į akis. Taip atsirado mano Gilliou.</p>
+      <div class="lentyna">
+        <article class="produktas">
+          <img src="vaizdai/perfect-gut.webp" width="720" height="720" loading="lazy"
+               alt="Gilliou Perfect Gut pakuotė ir paketėlis">
+          <h3>Perfect Gut</h3>
+          <p>Skaidulos, probiotikai, prebiotikai, fermentai ir augalų ekstraktai viename kasdieniame paketėlyje. Geriu ryte, prieš valgį.</p>
+          <span class="pastaba">Vartoju pati</span>
+        </article>
+        <article class="produktas">
+          <img src="vaizdai/perfect-collagen.webp" width="720" height="720" loading="lazy"
+               alt="Gilliou Perfect Collagen pakuotė ir paketėlis">
+          <h3>Perfect Collagen</h3>
+          <p>Kolageno peptidai ir vitaminas C, kuris prisideda prie normalaus kolageno susidarymo odai.</p>
+          <span class="pastaba">Vartoju pati</span>
+        </article>
+        <article class="produktas">
+          <img src="vaizdai/perfect-glp-1.webp" width="720" height="720" loading="lazy"
+               alt="Gilliou Perfect GLP-1 pakuotė ir paketėlis">
+          <h3>Perfect GLP-1</h3>
+          <p>Pasirinkau dėl sudėties: obuolių ir juodųjų serbentų skaidulos, gliukomananas ir chromas. Tai maisto papildas, ne vaistas.</p>
+          <span class="pastaba">Dar nebandžiau</span>
+        </article>
+      </div>
+
+      <figure class="patirtis">
+        <blockquote>
+          <p>Aštuoniolika metų gyvenau su sunkumu pilve ir lėtu virškinimu. Perfect Gut išbandžiau pirmiausia ant savęs, ir skirtumą pajutau greičiau, nei tikėjausi.</p>
+          <p>Tai mano patirtis, ne pažadas tau.</p>
+        </blockquote>
+        <figcaption>Elytė, apie Perfect Gut</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 6. Nemokama dovana -->
+  <section class="skyrius dovana" id="dovana" aria-labelledby="dovana-antraste">
+    <div class="remas">
+      <div>
+        <h2 id="dovana-antraste">Rytas, diena, vakaras</h2>
+        <p>Nemokama keturių puslapių dovana: maži kasdieniai įpročiai rytui, dienai ir vakarui. Atsidaro iš karto, nieko registruoti nereikia.</p>
+      </div>
+      <a class="mygtukas" href="https://drive.google.com/file/d/1vCTmGtLLjTYdi0z8dfl8YRskpNqBO2n3/view?usp=sharing"
+         target="_blank" rel="noopener">Atsisiųsti dovaną</a>
+    </div>
+  </section>
+
+  <!-- 7. Partnerystė -->
+  <section class="skyrius partneryste" id="partneryste" aria-labelledby="partneryste-antraste">
+    <div class="remas">
+      <div class="skaitomas">
+        <h2 id="partneryste-antraste">Kaip aš dirbu su Gilliou</h2>
+        <p>Dalinuosi tuo, ką išbandžiau pati. Be pardavinėjimo ir be spaudimo. Tik patirtis ir nuoroda tiems, kuriuos sudomino.</p>
+        <p class="svelnus">Gilliou veikia tinklinio marketingo principu. Tai reiškia du pajamų šaltinius, ne vieną.</p>
+      </div>
+
+      <div class="saltiniai">
+        <div class="saltinis">
+          <h3>Tiesioginiai pardavimai</h3>
+          <p>Žmogus perka pagal tavo nuorodą. Nuo jo pirkimų gauni dalį.</p>
+        </div>
+        <div class="saltinis">
+          <h3>Struktūra</h3>
+          <p>Tavo pakviesti žmonės rekomenduoja patys. Nuo jų pardavimų taip pat gauni dalį.</p>
+        </div>
+      </div>
+
+      <ol class="kasdien" aria-label="Ką partneris daro kasdien">
+        <li><h3>Vartoja</h3><p>Pradedama nuo to, ką išbandei ir kuo pasitiki.</p></li>
+        <li><h3>Dalinasi patirtimi</h3><p>Papasakoji, kaip yra tau. Nepardavinėji ir nespaudi.</p></li>
+        <li><h3>Duoda nuorodą</h3><p>Tik tiems, kurie patys paklausia. Kitiems nieko nesiūloma.</p></li>
+      </ol>
+
+      <div class="klausimai">
+        <h3>Sąžiningi atsakymai</h3>
+
+        <details class="klausimas">
+          <summary>Ar reikia pirkti?</summary>
+          <div class="atsakymas">
+            <p>Jei tik rekomenduoji, ne. Jei kuri komandą, taip: moki mėnesinę Lab X prenumeratą (tai mokymų platforma) ir kas mėnesį perki produktų bent už 80 taškų. Tai produktai, kuriuos vartoji.</p>
+          </div>
+        </details>
+
+        <details class="klausimas">
+          <summary>Ar reikia pardavinėti?</summary>
+          <div class="atsakymas">
+            <p>Ne. Užtenka papasakoti savo patirtį ir duoti nuorodą tiems, kurie paklausia. Įkyrumas prasideda nuo spaudimo. Jei tik dalijiesi ir nesiūlai kasdien, santykiai lieka.</p>
+          </div>
+        </details>
+
+        <details class="klausimas">
+          <summary>Kiek laiko tai užima?</summary>
+          <div class="atsakymas">
+            <p>Tempą renkiesi tu. Rekomenduoti tai, ką jau vartoji, užima tiek laiko, kiek nori skirti.</p>
+          </div>
+        </details>
+
+        <details class="klausimas">
+          <summary>Ar galiu pirma tik išbandyti produktus?</summary>
+          <div class="atsakymas">
+            <p>Taip. Būti tik pirkėju prenumeratos nereikia. Per tą pačią nuorodą galima ir pirkti, ir vėliau rekomenduoti.</p>
+            <p>Verta žinoti iš anksto: atidarytų papildų Gilliou atgal nepriima. Grąžinti galima tik neatidarytus, per 14 dienų. Todėl pradėti verta nuo vieno produkto.</p>
+          </div>
+        </details>
+
+        <details class="klausimas">
+          <summary>Ar tai ne piramidė?</summary>
+          <div class="atsakymas">
+            <p>Piramidėje pinigai daugiausia ateina iš to, kad nauji nariai moka už prisijungimą. Čia atlygis skaičiuojamas nuo tikrų produktų pirkimų. Rekomenduoti galima be jokio mokesčio.</p>
+          </div>
+        </details>
+
+        <details class="klausimas">
+          <summary>Kiek uždirbsiu?</summary>
+          <div class="atsakymas">
+            <p>Sąžiningai: niekas negali pažadėti. Taip rašo ir pats bendrovės atlygio planas. Principas paprastas: gauni dalį nuo pirkimų, kuriuos atneša tavo rekomendacija.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Pabaiga -->
+  <section class="skyrius pabaiga" aria-labelledby="pabaiga-antraste">
+    <div class="remas">
+      <h2 id="pabaiga-antraste">Jei sudomino, rasti galima čia.</h2>
+      <p>Per šią nuorodą galima ir pirkti, ir registruotis partneriu. Sprendimas visada lieka tau.</p>
+      <a class="mygtukas pagrindinis" href="https://gilliou.com/affiliate-program?a=c6b51361"
+         target="_blank" rel="noopener">Gilliou per mano nuorodą</a>
+      <p class="adresas">gilliou.com/affiliate-program?a=c6b51361</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="apacia">
+  <div class="remas">
+    <p class="kas">Elytė Šarkuvienė · <a href="https://www.instagram.com/elyte.paprastaismintis/" target="_blank" rel="noopener">@elyte.paprastaismintis</a></p>
+    <p>Maisto papildas nepakeičia įvairios ir subalansuotos mitybos bei sveikos gyvensenos.</p>
+    <p>Perfect GLP-1: jei vartoji vaistus, ypač nuo cukraus ar kraujospūdžio, laukiesi ar žindai, pirma pasitark su gydytoju.</p>
+  </div>
+</footer>
+
+<script type="module" src="komponentai/orbita/orbita.js"></script>
+</body>
+</html>
