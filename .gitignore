@@ -6,3 +6,6 @@ svetaine-ideja.md
 .vercel
 Thumbs.db
 desktop.ini
+
+.vercel
+.env*
